@@ -13,8 +13,8 @@ module Delayed
       @options = {
         :quiet => true,
         :pid_dir => "#{Rails.root}/tmp/pids",
-        :force_kill_waittime => 20
       }
+      @kill_waittime = 10
 
       @worker_count = 1
       @monitor = false
@@ -68,8 +68,8 @@ module Delayed
         opts.on('--no-wait', "Avoid killing the process if a current job is long run") do
           @no_wait = true
         end
-        opts.on('--kill-waitime', "Amount of time to wait to kill the process after sending the stop command") do |n|
-          @options[:force_kill_waittime] = n.to_i
+        opts.on('--kill-waittime N', "Amount of time to wait to kill the process after sending the stop command") do |n|
+          @kill_waittime = n.to_i
         end
       end
       @args = opts.parse!(args)
@@ -99,7 +99,7 @@ module Delayed
                :dir_mode => :normal,
                :monitor => @monitor,
                :no_wait => @no_wait,
-               :force_kill_waittime => @options.delete(:force_kill_waittime),
+               :force_kill_waittime => @kill_waittime,
                :ARGV => @args }
 
       Daemons.run_proc(process_name, opts) do |*args|
